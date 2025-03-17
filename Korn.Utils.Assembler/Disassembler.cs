@@ -9,14 +9,17 @@ namespace Korn.Utils.Assembler
         public bool IsLengthChangingInstruction => *(uint*)Pointer == 0x66666666;
         public bool IsJmpPtrRel32Instruction => *(short*)Pointer == 0x25FF;
         public bool IsMov10PtrInstruction => (*(uint*)Pointer & 0xFFFFFF) == 0x158B4C;
-        public bool IsMovRaxPtrInstruction => (*(uint*)Pointer & 0xFFFFFF) == 0x058B48;
+        public bool IsMovRaxRel32PtrInstruction => (*(uint*)Pointer & 0xFFFFFF) == 0x058B48;
         public bool IsDecPtrRaxInstruction => (*(uint*)Pointer & 0xFFFFFF) == 0x08FF66;
         public bool IsCallRel32Instruction => *Pointer == 0xE8;
         public bool IsJmpRel32Instruction => *Pointer == 0xE9;
         public bool IsJeRel8Instruction => *Pointer == 0x74;
 
-        public IntPtr GetJmpRel32Operand() => *(IntPtr*)(Pointer + 6 + *(int*)(Pointer + 2));
-        public byte GetJeRel8Operand() => Pointer[1];
+        public int GetJmpRel32Offset() => *(int*)(Pointer + 2);
+        public int GetJmpPtrRel32Offset() => *(int*)(Pointer + 2);
+        public IntPtr GetJmpRel32Operand() => (IntPtr)(Pointer + 6 + GetJmpRel32Offset());
+        public IntPtr GetJmpPtrRel32Operand() => *(IntPtr*)(Pointer + 6 + GetJmpPtrRel32Offset());
+        public byte GetJeRel8Offset() => Pointer[1];
 
         public int CountOfNextLengthChangingInstruction
         {
@@ -32,7 +35,15 @@ namespace Korn.Utils.Assembler
         public Disassembler* SkipLengthChangingInstruction() 
             => (Disassembler*)(*(byte**)self + CountOfNextLengthChangingInstruction);
 
-        public Disassembler* GetNextInstruction()
+        public Disassembler* SkipInstructions(int count)
+        {
+            for (var i = 0; i < count; i++)
+                NextInstruction();
+
+            return self;
+        }
+
+        public Disassembler* NextInstruction()
         {
             var length = GetInstructionLength(Pointer);
             Pointer += length;

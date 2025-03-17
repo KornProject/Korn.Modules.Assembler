@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Specialized;
+using System.Security.Cryptography;
 
 namespace Korn.Utils.Assembler
 {
@@ -7,6 +9,7 @@ namespace Korn.Utils.Assembler
         #region Methods
         #region xor
         public Assembler* XorRbpRbp() => write(0x48, 0x31, 0xED);
+        public Assembler* XorR11R11() => write(0x4D, 0x31, 0xDB);
         #endregion
         #region call
         public Assembler* CallRel32(IntPtr address) => write(0xE8)->write32((int)((long)address - (long)Pointer - sizeof(int)));
@@ -28,6 +31,7 @@ namespace Korn.Utils.Assembler
         public Assembler* SubRsp8(sbyte value) => write(0x48, 0x83, 0xEC)->write8(value);
         public Assembler* SubRsp32(int value) => write(0x48, 0x81, 0xEC)->write32(value);
         public Assembler* SubRbp32(int value) => write(0x48, 0x81, 0xED)->write32(value);
+        public Assembler* SubR1132(int value) => write(0x49, 0x81, 0xEB)->write32(value);
         #endregion
         #region add
         public Assembler* AddRsp8(sbyte value) => write(0x48, 0x83, 0xC4)->write8(value);
@@ -37,6 +41,7 @@ namespace Korn.Utils.Assembler
         public Assembler* AddRdx32(int value) => write(0x48, 0x81, 0xC2)->write32(value);
         public Assembler* AddR832(int value) => write(0x49, 0x81, 0xC0)->write32(value);
         public Assembler* AddR932(int value) => write(0x49, 0x81, 0xC1)->write32(value);
+        public Assembler* AddR1132(int value) => write(0x49, 0x81, 0xC3)->write32(value);
         #endregion
         #region push
         public Assembler* PushRbx() => write(0x53);
@@ -81,7 +86,9 @@ namespace Korn.Utils.Assembler
         public Assembler* MovRspPtrOff32Rdx(int offset) => write(0x48, 0x89, 0x94, 0x24)->write32(offset);
         public Assembler* MovRspPtrOff32R8(int offset) => write(0x4C, 0x89, 0x84, 0x24)->write32(offset);
         public Assembler* MovRspPtrOff32R9(int offset) => write(0x4C, 0x89, 0x8C, 0x24)->write32(offset);
+        public Assembler* MovRspPtrOff32R11(int offset) => write(0x4C, 0x89, 0x9C, 0x24)->write32(offset);
         public Assembler* MovRdi64(Address value) => write(0x48, 0xBF)->write64(value);
+        public Assembler* MoveRdiRdiPtr() => write(0x48, 0x8B, 0x3F);
         public Assembler* MovRdiRdiPtrOff8(sbyte offset) => write(0x48, 0x8B, 0x7F)->write8(offset);
         public Assembler* MovR8Rsp() => write(0x49, 0x89, 0xE0);
         public Assembler* MovR8PspPtrOff32(int offset) => write(0x4C, 0x8B, 0x84, 0x24)->write32(offset);
@@ -90,10 +97,46 @@ namespace Korn.Utils.Assembler
         public Assembler* MovR10R10PtrOff8(sbyte offset) => write(0x4D, 0x8B, 0x52)->write8(offset);
         public Assembler* MovR1064(Address value) => write(0x49, 0xBA)->write64(value);
         public Assembler* MovR10Rax() => write(0x49, 0x89, 0xC2);
+        public Assembler* MovR11Rsp() => write(0x49, 0x89, 0xE3);
+        public Assembler* MovR11RspPtrOff32(int offset) => write(0x4C, 0x8B, 0x9C, 0x24)->write32(offset);
         #endregion
         #region jmp
         public Assembler* JmpRax() => write(0xFF, 0xE0);
         public Assembler* JmpRel32Ptr(Address address) => write(0xFF, 0x25)->write32((int)((long)address - (long)Pointer - sizeof(int)));
+        #endregion
+        #region nop
+        public Assembler* Nop() => write(0x90);
+        public Assembler* Nop2() => write(0x66, 0x90);
+        public Assembler* Nop3() => write(0x0F, 0x1F, 0x00);
+        public Assembler* Nop4() => write(0x0F, 0x1F, 0x40, 0x00);
+        public Assembler* Nop5() => write(0x0F, 0x1F, 0x44, 0x00, 0x00);
+        public Assembler* Nop6() => write(0x66, 0x0F, 0x1F, 0x44, 0x00, 0x00);
+        public Assembler* Nop7() => write(0x0F, 0x1F, 0x80, 0x00, 0x00, 0x00, 0x00);
+        public Assembler* Nop8() => write(0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00);
+        public Assembler* Nop9() => write(0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00);
+        public Assembler* Nop10() => write(0x66, 0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00);
+        public Assembler* Nop11() => write(0x66, 0x66, 0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00);
+        public Assembler* Nop(int count)
+        {
+            while (count > 0)
+            {
+                if (count >= 11) Nop11();
+                else if (count >= 10) Nop10();
+                else if (count >= 9) Nop9();
+                else if (count >= 8) Nop8();
+                else if (count >= 7) Nop7();
+                else if (count >= 6) Nop6();
+                else if (count >= 5) Nop5();
+                else if (count >= 4) Nop4();
+                else if (count >= 3) Nop3();
+                else if (count >= 2) Nop2();
+                else Nop();
+
+                count -= 11;
+            }
+
+            return self;
+        }
         #endregion
         #endregion
         #region Auxiliarities
@@ -104,7 +147,40 @@ namespace Korn.Utils.Assembler
         public sbyte* GetPreviousSbyteValueLabel() => (sbyte*)(Pointer - 1);
         public byte* GetPreviousByteValueLabel() => (byte*)(Pointer - 1);
         public Assembler* WriteBytes(params byte[] bytes) => write(bytes);
+        public Assembler* WriteInt64(long value) => write64(value);
+        public Assembler* WriteInt64(IntPtr value) => write64(value);
         public void WriteInIntLabelOffset(int* label, IntPtr address) => *label = (int)((byte*)address - (byte*)label - 4);
+
+        public Assembler* NopInstruction()
+        {
+            var length = Disassembler.GetInstructionLength(Pointer);
+            return Nop(length);
+        }
+
+        public Assembler* SkipInstructions(int count)
+        {
+            for (var i = 0; i < count; i++)
+                NextInstruction();
+
+            return self;
+        }
+
+        public Assembler* NextInstruction()
+        {
+            var length = Disassembler.GetInstructionLength(Pointer);
+            Pointer += length;
+
+            return self;
+        }
+
+        public Assembler* NopInstructions(int count)
+        {
+            var length = 0;
+            while (count-- != 0)
+                length += Disassembler.GetInstructionLength(Pointer + length);
+
+            return Nop(length);
+        }
         #endregion
         #region Internal
         Assembler* write64(Address value)
