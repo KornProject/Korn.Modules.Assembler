@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Specialized;
-using System.Security.Cryptography;
 
 namespace Korn.Utils.Assembler
 {
@@ -9,6 +7,8 @@ namespace Korn.Utils.Assembler
         #region Methods
         #region xor
         public Assembler* XorRbpRbp() => write(0x48, 0x31, 0xED);
+        public Assembler* XorR8R8() => write(0x4D, 0x31, 0xC0);
+        public Assembler* XorR9R9() => write(0x4D, 0x31, 0xC9);
         public Assembler* XorR11R11() => write(0x4D, 0x31, 0xDB);
         #endregion
         #region call
@@ -72,15 +72,28 @@ namespace Korn.Utils.Assembler
         public Assembler* MovRaxR8() => write(0x4C, 0x89, 0xC0);
         public Assembler* MovRaxR9() => write(0x4C, 0x89, 0xC8);
         public Assembler* MovRaxR10() => write(0x4C, 0x89, 0xD0);
-        public Assembler* MovRaxR10Ptr() => write(0x49, 0x8B, 0x02);
+        public Assembler* MovRaxR10Ptr() => write(0x49, 0x8B, 0x02);       
         public Assembler* MovRaxRspPtrOff32(int offset) => write(0x48, 0x8B, 0x84, 0x24)->write32(offset);
+        public Assembler* MovRaxRaxPtr() => write(0x48, 0x8B, 0x00);
+        public Assembler* MovRaxRaxPtrOff8(sbyte offset) => write(0x48, 0x8B, 0x40)->write8(offset);
+        public Assembler* MovRbxRcx() => write(0x48, 0x89, 0xCB);
+        public Assembler* MovRcx64(Address value) => write(0x48, 0xB9)->write64(value);
+        public Assembler* MovRcxR12() => write(0x4C, 0x89, 0xE1);
+        public Assembler* MovRcxR14() => write(0x4C, 0x89, 0xF1);
+        public Assembler* MovRdx64(Address value) => write(0x48, 0xBA)->write64(value);
         public Assembler* MovRcxRsp() => write(0x48, 0x89, 0xE1);
         public Assembler* MovRcxPspPtrOff32(int offset) => write(0x48, 0x8B, 0x8C, 0x24)->write32(offset);
+        public Assembler* MovRcxRaxPtr() => write(0x48, 0x8B, 0x08);
+        public Assembler* MovRdxRbx() => write(0x48, 0x89, 0xDA);
         public Assembler* MovRdxRsp() => write(0x48, 0x89, 0xE2);
+        public Assembler* MovRdxRax() => write(0x48, 0x89, 0xC2);
         public Assembler* MovRdxPspPtrOff32(int offset) => write(0x48, 0x8B, 0x94, 0x24)->write32(offset);
         public Assembler* MovRbpRsp() => write(0x48, 0x89, 0xE5);
         public Assembler* MovRbpRspPtrOff32(int offset) => write(0x48, 0x8B, 0xAC, 0x24)->write32(offset);
         public Assembler* MovRaxRdiPtr() => write(0x48, 0x8B, 0x07);
+        public Assembler* MovRspR13() => write(0x4C, 0x89, 0xEC);
+        public Assembler* MovRspPtrOff8Rax(sbyte offset) => write(0x48, 0x89, 0x44, 0x24)->write8(offset);
+        public Assembler* MovRspPtrOff832(sbyte offset, int value) => write(0x48, 0xC7, 0x44, 0x24)->write8(offset)->write32(value);
         public Assembler* MovRspPtrOff32Rbp(int offset) => write(0x48, 0x89, 0xAC, 0x24)->write32(offset);
         public Assembler* MovRspPtrOff32Rcx(int offset) => write(0x48, 0x89, 0x8C, 0x24)->write32(offset);
         public Assembler* MovRspPtrOff32Rdx(int offset) => write(0x48, 0x89, 0x94, 0x24)->write32(offset);
@@ -88,10 +101,12 @@ namespace Korn.Utils.Assembler
         public Assembler* MovRspPtrOff32R9(int offset) => write(0x4C, 0x89, 0x8C, 0x24)->write32(offset);
         public Assembler* MovRspPtrOff32R11(int offset) => write(0x4C, 0x89, 0x9C, 0x24)->write32(offset);
         public Assembler* MovRdi64(Address value) => write(0x48, 0xBF)->write64(value);
-        public Assembler* MoveRdiRdiPtr() => write(0x48, 0x8B, 0x3F);
+        public Assembler* MovRdiRdiPtr() => write(0x48, 0x8B, 0x3F);
         public Assembler* MovRdiRdiPtrOff8(sbyte offset) => write(0x48, 0x8B, 0x7F)->write8(offset);
+        public Assembler* MovR832(int value) => write(0x49, 0xC7, 0xC0)->write32(value);
         public Assembler* MovR8Rsp() => write(0x49, 0x89, 0xE0);
         public Assembler* MovR8PspPtrOff32(int offset) => write(0x4C, 0x8B, 0x84, 0x24)->write32(offset);
+        public Assembler* MovR964(Address value) => write(0x49, 0xB9)->write64(value);
         public Assembler* MovR9Rsp() => write(0x49, 0x89, 0xE1);
         public Assembler* MovR9PspPtrOff32(int offset) => write(0x4C, 0x8B, 0x8C, 0x24)->write32(offset);
         public Assembler* MovR10R10PtrOff8(sbyte offset) => write(0x4D, 0x8B, 0x52)->write8(offset);
@@ -99,6 +114,10 @@ namespace Korn.Utils.Assembler
         public Assembler* MovR10Rax() => write(0x49, 0x89, 0xC2);
         public Assembler* MovR11Rsp() => write(0x49, 0x89, 0xE3);
         public Assembler* MovR11RspPtrOff32(int offset) => write(0x4C, 0x8B, 0x9C, 0x24)->write32(offset);
+        public Assembler* MovR12Rax() => write(0x49, 0x89, 0xC4);
+        public Assembler* MovR1364(Address value) => write(0x49, 0xBD)->write64(value);
+        public Assembler* MovR13Rsp() => write(0x49, 0x89, 0xE5);
+        public Assembler* MovR1464(Address value) => write(0x49, 0xBE)->write64(value);
         #endregion
         #region jmp
         public Assembler* JmpRax() => write(0xFF, 0xE0);
@@ -181,50 +200,27 @@ namespace Korn.Utils.Assembler
 
             return Nop(length);
         }
-        #endregion
+        #endregion  
         #region Internal
-        Assembler* write64(Address value)
-        {
-            *(Address*)Pointer = value;
-            Pointer += sizeof(long);
-
-            return self;
-        }
-
-        Assembler* write32(int value)
-        {
-            *(int*)Pointer = value;
-            Pointer += sizeof(int);
-
-            return self;
-        }
-
-        Assembler* write16(short value)
-        {
-            *(short*)Pointer = value;
-            Pointer += sizeof(short);
-
-            return self;
-        }
-
-        Assembler* write8(byte value)
-        {
-            *Pointer++ = value;
-
-            return self;
-        }
-
-        Assembler* write8(sbyte value)
-        {
-            *(sbyte*)Pointer++ = value;
-
-            return self;
-        }
+        Assembler* write64(Address value) => writeT(value);
+        Assembler* write32(int value) => writeT(value);
+        Assembler* write32(uint value) => writeT(value);
+        Assembler* write16(short value) => writeT(value);
+        Assembler* write8(byte value) => writeT(value);
+        Assembler* write8(sbyte value) => writeT(value);
 
         Assembler* write(params byte[] bytes)
         {
             for (var i = 0; i < bytes.Length; i++)
                 *Pointer++ = bytes[i];
+
+            return self;
+        }
+
+        Assembler* writeT<T>(T value) where T : unmanaged
+        {
+            *(T*)Pointer = value;
+            Pointer += sizeof(T);
 
             return self;
         }
