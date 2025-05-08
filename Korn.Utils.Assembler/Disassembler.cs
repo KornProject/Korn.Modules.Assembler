@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Korn.Utils.Assembler
+namespace Korn.Utils
 {   
     public unsafe struct Disassembler
     {
@@ -62,12 +62,12 @@ namespace Korn.Utils.Assembler
         public static implicit operator void*(Disassembler assembler) => assembler.Pointer;
         public static implicit operator IntPtr(Disassembler assembler) => (IntPtr)assembler.Pointer;
 
-        public static byte GetInstructionLength(byte* instruction) => GetInstructionLength(InstructionsTables.TABLE, instruction);
+        public static byte GetInstructionLength(byte* instruction) => GetInstructionLength(InstructionsSizeTable.IndexTable, instruction);
 
-        public static byte GetInstructionLength(byte[] table, byte* instruction)
+        public static byte GetInstructionLength(byte* sizesTable, byte* instruction)
         {
-            byte value = table[*instruction++];
-            return value < 0x10 ? value : GetInstructionLength(InstructionsTables.TABLES[value - 0x10], instruction);
+            byte value = sizesTable[*instruction++];
+            return value < 0x10 ? value : GetInstructionLength(InstructionsSizeTable.ShiftedTable + (value * 256), instruction);
         }
 
         public static int CalculateMinInstructionLength(byte* instructions, int length)
