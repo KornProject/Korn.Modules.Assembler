@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Korn.Utils.Assembler\Korn.Utils.Assembler.csproj" />
+    <ProjectReference Include="..\Korn.Modules.Assembler\Korn.Modules.Assembler.csproj" />
   </ItemGroup>
 
 </Project>
