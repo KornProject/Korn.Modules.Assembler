@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Korn.Utils
+namespace Korn
 {
     public unsafe struct Assembler
     {
