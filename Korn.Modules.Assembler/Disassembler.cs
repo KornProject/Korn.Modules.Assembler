@@ -70,12 +70,21 @@ namespace Korn
             return value < 0x10 ? value : GetInstructionLength(InstructionsSizeTable.ShiftedTable + (value * 256), instruction);
         }
 
-        public static int CalculateMinInstructionLength(byte* instructions, int length)
+        public static int CalculateMinInstructionLength(byte* instructions, int minLength)
         {
             int result = 0;
 
-            do result += GetInstructionLength(instructions + result);
-            while (result < length);
+            do
+            {
+                var length = GetInstructionLength(instructions + result);
+
+                // this means what in instructions was passed wrond asm code. it causes an infinite loop
+                if (length == 0)
+                    return -1;
+
+                result += length;
+            }
+            while (result < minLength);
 
             return result;
         }
